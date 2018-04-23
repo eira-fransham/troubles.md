@@ -1,0 +1,5 @@
+baseURL = "http://troubles.md/"
+languageCode = "en-us"
+title = "troubles.md"
+theme = "one"
+PygmentsCodeFences = true

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Example on Hugo Theme One</title>
+    <link>https://resugary.github.io/hugo-theme-one/tags/example/</link>
+    <description>Recent content in Example on Hugo Theme One</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 21 Dec 2017 23:30:36 +0800</lastBuildDate>
+    
+        <atom:link href="https://resugary.github.io/hugo-theme-one/tags/example/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>A Little Because by Teshima Aoi</title>
+      <link>https://resugary.github.io/hugo-theme-one/posts/a-little-because-by-teshima-aoi/</link>
+      <pubDate>Thu, 21 Dec 2017 23:30:36 +0800</pubDate>
+      
+      <guid>https://resugary.github.io/hugo-theme-one/posts/a-little-because-by-teshima-aoi/</guid>
+      <description>&lt;p&gt;Share a song &amp;ldquo;&lt;a href=&#34;https://soundcloud.com/momoro-cutiecutie/a-little-because-teshima-aoi&#34;&gt;A Little Because&lt;/a&gt;&amp;rdquo;.&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;A Little Because is a short version of Because.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;菅野よう子と手嶌葵によるコラボレーションシングル「Because」が、本日4月7日にiTunes Store限定でリリースされた。&lt;/p&gt;
+
+&lt;p&gt;昨年はプロデュースワークのみならず、自選コレクションアルバム「スペース バイオチャージ」のリリースや、リーダーを務めるバンドYOKO KANNO SEATBELTSの“来地球記念”ライブ「超時空七夕ソニック」の開催など、個人名義の活動を多く行いファンを喜ばせた菅野よう子。今回iTunes Store限定で発売される新作「Because」では手嶌葵をボーカルに迎え、透明感のある美しいポップスを作り上げている。なお、シングルには別アレンジバージョン「a little because」もあわせて収録。&lt;/p&gt;
+
+&lt;p&gt;また本作では、やくしまるえつこ（相対性理論、TUTU HELVETICAほか）がジャケットのイラストを手がけている。今度は音楽での共演にも期待したいところだ。&lt;/p&gt;
+
+&lt;p&gt;Source: &lt;a href=&#34;https://natalie.mu/music/news/30166&#34;&gt;natalie&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Article With Images Preview</title>
+      <link>https://resugary.github.io/hugo-theme-one/posts/article-with-images-preview/</link>
+      <pubDate>Wed, 20 Dec 2017 12:36:50 +0800</pubDate>
+      
+      <guid>https://resugary.github.io/hugo-theme-one/posts/article-with-images-preview/</guid>
+      <description>&lt;p&gt;ドライブサーガ仮面ライダーチェイサーの打ち上げに行ってきました。一か月皆さんにお会いしてないだけで、随分久しぶりに感じます。お楽しみに！&lt;/p&gt;
+
+&lt;p&gt;ふみかちゃんがバックからおもむろに取り出したティッシュが大きくて笑いました!(記念写真参照)&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://wx1.sinaimg.cn/large/b28d52d0gy1fmocc5eiekj20lc0sgwhz.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;source: Twiiter&lt;a href=&#34;https://twitter.com/lespros_rio/status/672026262374756352&#34;&gt;@lespros_rio&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Syntax Highlighting Preview</title>
+      <link>https://resugary.github.io/hugo-theme-one/posts/syntax-highlighting-preview/</link>
+      <pubDate>Wed, 20 Dec 2017 12:33:21 +0800</pubDate>
+      
+      <guid>https://resugary.github.io/hugo-theme-one/posts/syntax-highlighting-preview/</guid>
+      <description>&lt;p&gt;Syntax highlighting is a feature of text editors that are used for programming, scripting, or markup languages, such as HTML. Besides Chroma, the default syntax hightlighter in Hugo, &lt;a href=&#34;https://highlightjs.org/&#34;&gt;highlight.js&lt;/a&gt; is a better choice. The bare minimum for using highlight.js on a web page is linking to the library along with one of the styles and calling initHighlightingOnLoad:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;&amp;lt;link rel=&amp;quot;stylesheet&amp;quot; href=&amp;quot;/path/to/styles/default.css&amp;quot;&amp;gt;
+&amp;lt;script src=&amp;quot;/path/to/highlight.pack.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;
+&amp;lt;script&amp;gt;hljs.initHighlightingOnLoad();&amp;lt;/script&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Theme one uses the github style color theme.&lt;/p&gt;
+
+&lt;p&gt;CSS&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-css&#34;&gt;@font-face {
+  font-family: Chunkfive; src: url(&#39;Chunkfive.otf&#39;);
+}
+
+body, .usertext {
+  color: #F0F0F0; background: #600;
+  font-family: Chunkfive, sans;
+}
+
+@import url(print.css);
+@media print {
+  a[href^=http]::after {
+    content: attr(href)
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;JavaScript&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;function $initHighlight(block, cls) {
+  try {
+    if (cls.search(/\bno\-highlight\b/) != -1)
+      return process(block, true, 0x0F) +
+             ` class=&amp;quot;${cls}&amp;quot;`;
+  } catch (e) {
+    /* handle exception */
+  }
+  for (var i = 0 / 2; i &amp;lt; classes.length; i++) {
+    if (checkCondition(classes[i]) === undefined)
+      console.log(&#39;undefined&#39;);
+  }
+}
+
+export  $initHighlight;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Python&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;@requires_authorization
+def somefunc(param1=&#39;&#39;, param2=0):
+    r&#39;&#39;&#39;A docstring&#39;&#39;&#39;
+    if param1 &amp;gt; param2: # interesting
+        print &#39;Gre\&#39;ater&#39;
+    return (param2 - param1 + 1 + 0b10l) or None
+
+class SomeClass:
+    pass
+
+&amp;gt;&amp;gt;&amp;gt; message = &#39;&#39;&#39;interpreter
+... prompt&#39;&#39;&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Shell Session&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-shell&#34;&gt;$ echo $EDITOR
+vim
+$ git checkout master
+Switched to branch &#39;master&#39;
+Your branch is up-to-date with &#39;origin/master&#39;.
+$ git push
+Everything up-to-date
+$ echo &#39;All
+&amp;gt; done!&#39;
+All
+done!
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can download a custom bundle from &lt;a href=&#34;https://highlightjs.org/download/&#34;&gt;here&lt;/a&gt; including only the languages you need.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

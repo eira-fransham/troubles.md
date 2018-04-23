@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Hugo on Hugo Theme One</title>
+    <link>https://resugary.github.io/hugo-theme-one/tags/hugo/</link>
+    <description>Recent content in Hugo on Hugo Theme One</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 20 Dec 2016 20:08:19 +0800</lastBuildDate>
+    
+        <atom:link href="https://resugary.github.io/hugo-theme-one/tags/hugo/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Hugo Quick Start</title>
+      <link>https://resugary.github.io/hugo-theme-one/posts/hugo-quick-start/</link>
+      <pubDate>Tue, 20 Dec 2016 20:08:19 +0800</pubDate>
+      
+      <guid>https://resugary.github.io/hugo-theme-one/posts/hugo-quick-start/</guid>
+      <description>
+
+&lt;h2 id=&#34;step-1-install-hugo&#34;&gt;Step 1: Install Hugo&lt;/h2&gt;
+
+&lt;p&gt;Homebrew, a package manager for macOS, can be installed from &lt;a href=&#34;https://brew.sh/&#34;&gt;brew.sh&lt;/a&gt;. See &lt;a href=&#34;https://gohugo.io/getting-started/installing&#34;&gt;install&lt;/a&gt; if you are running Windows etc.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;brew install hugo
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;To verify your new install:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;hugo version
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;step-2-create-a-new-site&#34;&gt;Step 2: Create a New Site&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code&gt;hugo new site quickstart
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The above will create a new Hugo site in a folder named quickstart.&lt;/p&gt;
+
+&lt;h2 id=&#34;step-3-add-a-theme&#34;&gt;Step 3: Add a Theme&lt;/h2&gt;
+
+&lt;p&gt;See &lt;a href=&#34;https://themes.gohugo.io/&#34;&gt;themes.gohugo.io&lt;/a&gt; for a list of themes to consider. This quickstart uses the &lt;a href=&#34;https://themes.gohugo.io/gohugo-theme-ananke/&#34;&gt;Ananke theme&lt;/a&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;cd quickstart;\
+git init;\
+git submodule add https://github.com/budparr/gohugo-theme-ananke.git themes/ananke;\
+
+# Edit your config.toml configuration file
+# and add the Ananke theme.
+echo &#39;theme = &amp;quot;ananke&amp;quot;&#39; &amp;gt;&amp;gt; config.toml
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;step-4-add-some-content&#34;&gt;Step 4: Add Some Content&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code&gt;hugo new posts/my-first-post.md
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Edit the newly created content file if you want. Now, start the Hugo server with drafts enabled:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;hugo server -D
+
+Started building sites ...
+Built site for language en:
+1 of 1 draft rendered
+0 future content
+0 expired content
+1 regular pages created
+8 other pages created
+0 non-page files copied
+1 paginator pages created
+0 categories created
+0 tags created
+total in 18 ms
+Watching for changes in /Users/bep/sites/quickstart/{data,content,layouts,static,themes}
+Serving pages from memory
+Web Server is available at http://localhost:1313/ (bind address 127.0.0.1)
+Press Ctrl+C to stop
+Navigate to your new site at http://localhost:1313/.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;step-5-customize-the-theme&#34;&gt;Step 5: Customize the Theme&lt;/h2&gt;
+
+&lt;p&gt;Your new site already looks great, but you will want to tweak it a little before you release it to the public.&lt;/p&gt;
+
+&lt;p&gt;Site Configuration
+Open up config.toml in a text editor:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;baseURL = &amp;quot;https://example.org/&amp;quot;
+languageCode = &amp;quot;en-us&amp;quot;
+title = &amp;quot;My New Hugo Site&amp;quot;
+theme = &amp;quot;ananke&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Replace the title above with something more personal. Also, if you already have a domain ready, set the baseURL. Note that this value is not needed when running the local development server.&lt;/p&gt;
+
+&lt;p&gt;Tip: Make the changes to the site configuration or any other file in your site while the Hugo server is running, and you will see the changes in the browser right away.&lt;/p&gt;
+
+&lt;p&gt;For theme specific configuration options, see the &lt;a href=&#34;https://github.com/budparr/gohugo-theme-ananke&#34;&gt;theme site&lt;/a&gt;.&lt;/p&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>Hello Hugo!</title>
+      <link>https://resugary.github.io/hugo-theme-one/posts/hello-hugo/</link>
+      <pubDate>Mon, 01 Sep 2014 12:19:03 +0800</pubDate>
+      
+      <guid>https://resugary.github.io/hugo-theme-one/posts/hello-hugo/</guid>
+      <description>
+
+&lt;p&gt;Hello from Hugo! If you&amp;rsquo;re reading this in your browser, good job! The file &lt;code&gt;content/post/hello-hugo.md&lt;/code&gt; has been converted into a complete HTML document by Hugo. Isn&amp;rsquo;t that pretty nifty?&lt;/p&gt;
+
+&lt;h2 id=&#34;a-section&#34;&gt;A Section&lt;/h2&gt;
+
+&lt;p&gt;Here&amp;rsquo;s a simple titled section where you can place whatever information you want.&lt;/p&gt;
+
+&lt;p&gt;You can use inline HTML if you want, but really there&amp;rsquo;s not much that Markdown can&amp;rsquo;t do.&lt;/p&gt;
+
+&lt;h2 id=&#34;showing-off-with-markdown&#34;&gt;Showing off with Markdown&lt;/h2&gt;
+
+&lt;p&gt;A full cheat sheet can be found &lt;a href=&#34;https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet&#34;&gt;here&lt;/a&gt;
+or through &lt;a href=&#34;https://google.com/&#34;&gt;Google&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;There are some &lt;em&gt;easy&lt;/em&gt; examples for styling, though. I can&amp;rsquo;t &lt;strong&gt;emphasize&lt;/strong&gt; that enough.
+Creating &lt;a href=&#34;https://google.com/&#34;&gt;links&lt;/a&gt; or &lt;code&gt;inline code&lt;/code&gt; blocks are very straightforward.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;There are some *easy* examples for styling, though. I can&#39;t **emphasize** that enough.
+Creating [links](https://google.com/) or `inline code` blocks are very straightforward.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;front-matter-for-fun&#34;&gt;Front Matter for Fun&lt;/h2&gt;
+
+&lt;p&gt;This is the meta data for this post. It is located at the top of the &lt;code&gt;content/post/hello-hugo.md&lt;/code&gt; markdown file.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;---
+title: &amp;quot;Hello Hugo!&amp;quot;
+description: &amp;quot;Saying &#39;Hello&#39; from Hugo&amp;quot;
+date: &amp;quot;2014-09-01&amp;quot;
+categories:
+  - &amp;quot;example&amp;quot;
+  - &amp;quot;hello&amp;quot;
+tags:
+  - &amp;quot;example&amp;quot;
+  - &amp;quot;hugo&amp;quot;
+  - &amp;quot;blog&amp;quot;
+---
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This section, called &amp;lsquo;Front Matter&amp;rsquo;, is what tells Hugo about the content in this file: the &lt;code&gt;title&lt;/code&gt; of the item, the
+&lt;code&gt;description&lt;/code&gt;, and the &lt;code&gt;date&lt;/code&gt; it was posted. In our example, we&amp;rsquo;ve added two custom bits of data too. The &lt;code&gt;categories&lt;/code&gt; and
+&lt;code&gt;tags&lt;/code&gt; sections are used in this example for indexing/grouping content. You will learn more about what that means by
+examining the code in this example and through reading the Hugo &lt;a href=&#34;http://gohugo.io/overview/introduction&#34;&gt;documentation&lt;/a&gt;.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

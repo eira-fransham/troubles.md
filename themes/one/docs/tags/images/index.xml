@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Images on Hugo Theme One</title>
+    <link>https://resugary.github.io/hugo-theme-one/tags/images/</link>
+    <description>Recent content in Images on Hugo Theme One</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 20 Dec 2017 12:36:50 +0800</lastBuildDate>
+    
+        <atom:link href="https://resugary.github.io/hugo-theme-one/tags/images/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Article With Images Preview</title>
+      <link>https://resugary.github.io/hugo-theme-one/posts/article-with-images-preview/</link>
+      <pubDate>Wed, 20 Dec 2017 12:36:50 +0800</pubDate>
+      
+      <guid>https://resugary.github.io/hugo-theme-one/posts/article-with-images-preview/</guid>
+      <description>&lt;p&gt;ドライブサーガ仮面ライダーチェイサーの打ち上げに行ってきました。一か月皆さんにお会いしてないだけで、随分久しぶりに感じます。お楽しみに！&lt;/p&gt;
+
+&lt;p&gt;ふみかちゃんがバックからおもむろに取り出したティッシュが大きくて笑いました!(記念写真参照)&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://wx1.sinaimg.cn/large/b28d52d0gy1fmocc5eiekj20lc0sgwhz.jpg&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;source: Twiiter&lt;a href=&#34;https://twitter.com/lespros_rio/status/672026262374756352&#34;&gt;@lespros_rio&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
