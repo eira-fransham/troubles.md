@@ -222,11 +222,19 @@ pre {
     line-height: 1.5;
 }
 
-code {
+pre code {
     font-size: 14px;
+}
+
+code {
     display: inline-block;
     max-width: 100%;
     font-variant-ligatures: none;
+}
+
+h1>code, h2>code, h3>code, h4>code, p>code {
+    font-size: smaller;
+    text-transform: none;
 }
 
 figcaption {

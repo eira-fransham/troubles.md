@@ -3,3 +3,7 @@ languageCode = "en-us"
 title = "troubles.md"
 theme = "one"
 PygmentsCodeFences = true
+PygmentsStyle = "arduino"
+
+[blackfriday]
+extension = ["footnotes"]

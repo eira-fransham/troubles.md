@@ -5,19 +5,19 @@ draft: false
 ---
 
 ### Contents:
-- [Number one optimization tip: don't](#number-one-optimization-tip-dont)
+- [Number one optimization tip: don't](#number-one-optimization-tip-don-t)
 - [Never optimize blindly](#never-optimize-blindly)
-- [Don't bother optimizing one-time costs](#dont-bother-optimizing-one-time-costs)
+- [Don't bother optimizing one-time costs](#don-t-bother-optimizing-one-time-costs)
 - [Improve your algorithms](#improve-your-algorithms)
 - [CPU architecture primer](#cpu-architecture-primer)
 - [Keep as much as possible in cache](#keep-as-much-as-possible-in-cache)
 - [Keep as much as possible in registers](#keep-as-much-as-possible-in-registers)
-- [Avoid `Box<Trait>`](#avoid-boxtrait)
+- [Avoid `Box<Trait>`](#avoid-box-trait)
 - [Use stack-based variable-length datatypes](#use-stack-based-variable-length-datatypes)
 - [Loop unrolling is still cool](#loop-unrolling-is-still-cool)
 - [`assert!` conditions beforehand](#assert-conditions-beforehand)
 - [Use link-time optimization](#use-link-time-optimization)
-- [Don't use `#[inline(always)]`](#dont-use-inlinealways)
+- [Don't use `#[inline(always)]`](#dont-use-inline-always)
 - [Parallelize, but not how you think](#parallelize-but-not-how-you-think)
 - [A case study](#a-case-study)
 - [Wrapping up](#wrapping-up)
