@@ -33,7 +33,7 @@ header,header.a{
         margin-left: 5.5rem;
         margin-right: 5.5rem;
     }
-    pre code {
+    pre {
         font-size: 12px;
     }
 }
@@ -61,6 +61,10 @@ header,header.a{
 
 html {
     height: 100%;
+}
+
+li:target {
+    background-color: #FFFFE0;
 }
 
 body {
@@ -98,8 +102,10 @@ header {
     border-bottom: 0.10em solid black;
 }
 
-.title {
-    color:#777;
+.title, .subtitle {
+    margin-bottom: 0px;
+    display: inline-block;
+    color: #777;
     text-decoration: none;
 }
 
@@ -216,14 +222,16 @@ a:hover {
 
 pre {
     font-family: monospace, monospace;
-    padding: 15px;
+    margin-left: 0.7em;
+    padding-left: 1.4em;
+    padding-right: 15px;
+    padding-top: 15px;
+    padding-bottom: 15px;
     margin-bottom: 20px;
     overflow: auto;
     line-height: 1.5;
-}
-
-pre code {
     font-size: 14px;
+    border-left: 3.5px solid #bbb;
 }
 
 code {

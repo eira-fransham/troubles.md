@@ -3,7 +3,10 @@ languageCode = "en-us"
 title = "troubles.md"
 theme = "one"
 PygmentsCodeFences = true
-PygmentsStyle = "arduino"
+PygmentsUseClasses = true
+
+[params]
+image = "floppies.png"
 
 [blackfriday]
 extension = ["footnotes"]

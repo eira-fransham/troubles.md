@@ -44,7 +44,7 @@ This particular story about NaN starts with a strange bug in [`wasmi`][wasmi], o
                (i32.const 0xffa00000))
 ```
 
-All other tests were succeeding, but doing a bitwise cast from integer to float and visa-versa was failing. Furthermore, these tests all succeeded on x86_64 (i.e. when compiled for 64-bit), they only failed on x86 (i.e. when compiled for 32-bit). Lastly, the difference between the expected value and the received value was only one bit. Instead of returning a float with the bit pattern `0x7fa000000` it would return `0x7fe000000` instead. If you've worked with NaNs before, you might have noticed something:
+All other tests were succeeding, but doing a bitwise cast from integer to float and vice-versa was failing. Furthermore, these tests all succeeded on x86_64 (i.e. when compiled for 64-bit), they only failed on x86 (i.e. when compiled for 32-bit). Lastly, the difference between the expected value and the received value was only one bit. Instead of returning a float with the bit pattern `0x7fa00000` it would return `0x7fe00000` instead. If you've worked with NaNs before, you might have noticed something:
 
 ```
 Expected: 0b11111111010000000000000000000000000
@@ -52,7 +52,7 @@ Got:      0b11111111110000000000000000000000000
                     ^ This bit is different
 ```
 
-That's right, it's the [quiet bit][snan]! For those unaware, the quiet bit determines whether or not the number should raise an exception when you attempt to use it. This is because the [IEEE 754 standard][ieee754] was written at a time when it wasn't necessarily expected that a programming language would include exceptions. The standard includes provisions to allow hardware-level exceptions when, for example, dividing by zero. The idea is that when the hardware tries to execute an invalid floating point operation (like division by zero) it is allowed to generate a "signalling NaN", or sNaN. This is what we see above - the quiet bit is set to 0, meaning that the NaN is signalling[^ieee-x86]. When you try to use this value (for example, by multiplying it with another number) the hardware is allowed to generate an exception and then return a "quiet NaN", or qNaN, which has the quiet bit set to 1. I say "allowed to" rather than "does" or "should" because IEEE 754 leaves this unspecified, and in fact as far as I can tell x86 and ARM never generate sNaNs, the only way to create them is to reinterpret an integer with the signalling bit set. Originally, I thought the source of the problem was obvious: [Rust was quieting NaN when casting an int to a float][rust-cast]. I remember seeing [tomaka][tomaka]'s[^troubles] talk at RustFest 2017 on binding C libraries where he mentioned that Rust guarantees that all NaNs are quiet and that you have to explicitly handle that when using floats returned from C (where sNaNs are allowed). So I checked the source of `f32::from_bits` and... [nope][from_bits]. It just does a normal reintepret. Turns out tomaka's advice was out of date, and Rust [now allows sNaNs][rust-snans]
+That's right, it's the [quiet bit][snan]! For those unaware, the quiet bit determines whether or not the number should raise an exception when you attempt to use it. This is because the [IEEE 754 standard][ieee754] was written at a time when it wasn't necessarily expected that a programming language would include exceptions. The standard includes provisions to allow hardware-level exceptions when, for example, dividing zero by zero. The idea is that when the hardware tries to execute an invalid floating point operation it is allowed to generate a "signalling NaN", or sNaN. This is what we see above - the quiet bit is set to 0, meaning that the NaN is signalling[^ieee-x86]. When you try to use this value (for example, by multiplying it with another number) the hardware is allowed to generate an exception and then return a "quiet NaN", or qNaN, which has the quiet bit set to 1. I say "allowed to" rather than "does" or "should" because IEEE 754 leaves this unspecified, and in fact as far as I can tell x86 and ARM never generate sNaNs, the only way to create them is to reinterpret an integer with the signalling bit set. Originally, I thought the source of the problem was obvious: [Rust was quieting NaN when casting an int to a float][rust-cast]. I remember seeing [tomaka][tomaka]'s[^troubles] talk at RustFest 2017 on binding C libraries where he mentioned that Rust guarantees that all NaNs are quiet and that you have to explicitly handle that when using floats returned from C (where sNaNs are allowed). So I checked the source of `f32::from_bits` and... [nope][from_bits]. It just does a normal reintepret. Turns out tomaka's advice was out of date, and Rust [now allows sNaNs][rust-snans]
 
 [snan]: https://en.wikipedia.org/wiki/NaN#Signaling_NaN
 [ieee754]: https://en.wikipedia.org/wiki/IEEE_754
@@ -61,7 +61,7 @@ That's right, it's the [quiet bit][snan]! For those unaware, the quiet bit deter
 [from_bits]: https://github.com/rust-lang/rust/blob/8010604b2d888ac839147fe27de76cdcc713aa1b/src/libcore/num/f32.rs#L270-L275
 [rust-snans]: https://github.com/rust-lang/rust/pull/46012/commits/439576fd7bedf741db5fb6a21c902e858d51f2a0
 
-[^ieee-x86]: Quick note: this is only true for x86, the IEEE 754 spec leaves it unspecified whether 0 or 1 represents signalling, as long as the bit mask is the same (`1 << (sizeof(float) - 6)`). Why they thought it was necessary to leave this unspecified instead of just picking one and sticking with it is beyond me. Maybe on some CPUs it's faster to unset a bit and on others it's faster to set it (let's be real here though, probably not).
+[^ieee-x86]: Quick note: this is only true for x86, the IEEE 754 spec leaves it unspecified whether 0 or 1 represents signalling, as long as the bit mask is the same (`1 << (sizeof(float) * 8 - 6)`). Why they thought it was necessary to leave this unspecified instead of just picking one and sticking with it is beyond me. Maybe on some CPUs it's faster to unset a bit and on others it's faster to set it (let's be real here though, probably not).
 
 [^troubles]: Tomaka inspired the name of this blog with his file [TROUBLES.md][troubles-md]. I originally bought this domain because he mentioned that he was annoyed that TROUBLES.md kept being brought up in discussions about Rust language design. Yeah, this blog basically started as a way for me to troll my mate.
 
@@ -96,7 +96,7 @@ where
 }
 ```
 
-That `v.transmute_into()` call was returning `0x7fe000000` instead of `0x7fa000000`! Hang on, like the name implies, `v.transmute_into()` should just be a transmute, it should just reinterpret the bits. I looked at the source code, and sure enough:
+That `v.transmute_into()` call was returning `0x7fe00000` instead of `0x7fa00000`! Hang on, like the name implies, `v.transmute_into()` should just be a transmute, it should just reinterpret the bits. I looked at the source code, and sure enough:
 
 ```rust
 impl TransmuteInto<f32> for i32 {
