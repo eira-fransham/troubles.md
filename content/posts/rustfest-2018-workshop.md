@@ -6,13 +6,13 @@ draft: false
 
 > "In almost every computation a great variety of arrangements for the succession of the processes is possible, and various considerations must influence the selection amongst them for the purposes of a Calculating Engine. One essential object is to choose that arrangement which shall tend to reduce to a minimum the time necessary for completing the calculation." 
 > 
-> ### Ada Lovelace, 1843
+> <span class="attribution">Ada Lovelace, 1843</span>
 
 ## Prerequisites
 
 You should get these from your package manager where possible, but if you don't have a package manager installed then you can download them from the linked websites. Your package manager will be [choco][choco] on Windows, [homebrew][brew] on macOS, and on Linux it could be one of `apt-get`, `pacman`, `rpm`, `nix`, `cron`+`wget`, your secretary logging into your computer and downloading unsigned binaries while you sleep, etc.
 
-- You'll need [Rust][rust] to compile your code, of course.
+- You'll need [Rust][rust] to compile the code, of course. You should [Rustup][rustup] to install Rust so that you can use the [nightly build][nightly-rust] - right now, stable still doesn't support benchmarks.
 - The sample code for this is [here][rustfest-sample-code].
 - To compare results we can use `cargo-benchcmp`, just run `cargo install cargo-benchcmp` to get it.
 - To generate performance traces you'll need [Valgrind][valgrind], this requires macOS or Linux. If you're on Windows then you can use my Valgrind traces, see below.
@@ -22,10 +22,12 @@ You should get these from your package manager where possible, but if you don't 
 [brew]: https://brew.sh/
 [rustfest-sample-code]: https://github.com/Vurich/rustfest-perf-workshop
 [rust]: https://www.rust-lang.org/
+[rustup]: http://rustup.rs/
+[nightly-rust]: https://doc.rust-lang.org/1.15.1/book/nightly-rust.html
 [valgrind]: http://valgrind.org/
 [kcachegrind]: https://kcachegrind.github.io/html/Home.html
 
-You'll probably have seen `perf`+`flamegraph` recommended before by [certain very smart and handsome fellows][warp-speed] but I've actually had more luck with `callgrind` (included in Valgrind). You can try to use `perf` but although it can give very good outputs for some programs it's quite inconsistent. Also, using `callgrind` means you can use KCachegrind, which is the best thing since sliced bread. In the linked article I said that Valgrind was scary, but that was one of my patented Uninformed Opinions&trade;. It's actually very intuitive and, honestly, easier to use than the "simple" solution of using `perf`.
+You'll probably have seen `perf`+`flamegraph` recommended before by [certain very smart and handsome fellows][warp-speed] but I've actually had more luck with callgrind (included in Valgrind). You can try to use `perf` but although it can give very good outputs for some programs it's quite inconsistent. Also, using callgrind means you can use KCachegrind, which is the best thing since sliced bread. In the linked article I said that Valgrind was scary, but that was one of my patented Uninformed Opinions&trade;. It's actually very intuitive and, honestly, easier to use than the "simple" solution of using `perf`. I'll go into more detail about how to use callgrind later on.
 
 [warp-speed]: {{< ref "posts/rust-optimization.md" >}}
 
@@ -41,11 +43,13 @@ You should have a few different kinds of benchmarks:
 2. Ones that exercise degenerate cases to make sure that your code isn't fast in the general case but incredibly slow in edge-cases.
 3. Ones that exercise real-world cases in confinement, this can help pinpoint where your code is choking.
 
-You can see where I added the benchmarks in [this commit][benchmark-commit] in the sample code repo. I've heavily commented the benchmarks so you can see my thinking, and I highly recommend you read the comments and the code in that commit to get an idea of what a decent benchmark suite looks like. It's not perfect, more and more-accurate benchmarks could be written, but the point is that our language has very few primitives (function calls, variables, assigment, literals) and so we need benchmarks that exercise each of those.
+You can see where I added the benchmarks in [this commit][benchmark-commit] in the sample code repo. I've heavily commented the benchmarks so you can see my thinking, and I highly recommend you read the comments and the code in that commit to get an idea of what a decent benchmark suite looks like. It's not perfect, more and better benchmarks could be written, but the point is that our language has very few primitives (function calls, variables, assigment, literals) and so we need benchmarks that exercise each of those.
 
 [benchmark-commit]: https://github.com/Vurich/rustfest-perf-workshop/commit/f839ff3cd76343e7371eec73de61997fa000f1eb
 
 Probably you already know [how to run benchmarks in Rust][benchmarks], but doing so isn't actually terribly useful in isolation. Benchmarks alone are essentially meaningless, since they are affected by everything from the current PC setup to the other currently-running programs. Their power comes in comparison.
+
+[benchmarks]: https://doc.rust-lang.org/1.16.0/book/benchmark-tests.html
 
 If you haven't already, you need to make sure that you're using the nightly release of Rust, since the stable release doesn't allow you to run benchmarks. If you're using [`rustup`][rustup], this is simple - just do `rustup override set nightly`. If you're not using `rustup`, then use `rustup`. Sorry, it's really the only convenient way to use nightly Rust.
 
@@ -68,7 +72,7 @@ benches::run_real_code         141,153                 141,211                  
 
 You'll notice that even when you run the exact same code twice you can still get slightly different results. You shouldn't trust speedups of less than 2% unless you can very reliably reproduce them.
 
-So, where do we start? Well, that's what our trusty friend Valgrind is for. Valgrind is an execution framework that allows plugins to analyse a compiled program at quite a deep level. It ships with tools to [detect memory safety bugs][memcheck], to [report possible deadlocks and race conditions][helgrind] and - most importantly for us - to [analyse the time taken by individual functions][callgrind]. It can't produce output that's very useful to humans without some help, however. Specifically, it needs debuginfo enabled. For release builds (`cargo build --release`) you can add that to the `Cargo.toml` like so:
+So, where do we start? Well, that's what our trusty friend Valgrind is for. Valgrind is an execution framework that allows plugins to analyse a compiled program at quite a deep level. It ships with tools to [detect memory safety bugs][memcheck], to [report possible deadlocks and race conditions][helgrind] and - most importantly for us - to [analyse the time taken by individual functions][callgrind]. It can't produce output that's very useful to humans without some help, however. Specifically, it needs debuginfo enabled. For release builds (those built with `cargo build --release`) you can add that to the `Cargo.toml` like so:
 
 ```toml
 [profile.release]
@@ -132,14 +136,14 @@ If you're on a platform that Valgrind supports, you can follow the next steps to
 [valgrind-trace]: https://gist.githubusercontent.com/Vurich/5fc8d700ceaa85c0b185eb493a3d5125/raw/28894cfd8869b377fbb96e7a0a4f1c9e204a213b/callgrind.out.6359
 
 ```text
-valgrind --tool=callgrind target/release/deps/rustfest-5c3dd55c20998644 --bench
+valgrind --tool=callgrind /path/to/benchmarks --bench
 ```
 
 Callgrind actually has lots of options which you can see with `--help`, and they're really useful for debugging slowness within functions (as opposed to which functions are slow), but for now we'll just run it with the defaults. This will generate a file with a name like `callgrind.out.1234` where `1234` is a unique number for each run of callgrind. Run KCachegrind (it's a GUI program, so you probably don't want to start it from the command-line) and open the generated `callgrind.out` file. You should see something that looks like so:
 
 ![KCachegrind's home screen](/rustfest-2018-workshop/kcachegrind.png "KCachegrind's home screen")
 
-This is probably pretty overwhelming. We can whittle down the functions to just our code by typing the name of our project (if you're using the sample project then this will be `rustfest`) into the search bar on the left. If we look at the list of functions that take the most time, we can see that after the generated `main` function the most time is spent in `eval`. Probably you guessed this, what with it being one of only two functions in our module, but hey, it's nice to get confirmation. Let's click on `eval` and see what its cost centers are. In the bottom-right, you'll see the list of functions called by `eval` in order of their total cost - these are called the "callees". You can see a visualisation of the callees in a tree-like structure by clicking "callee map" at the top, but depending on your tolerance for soulless coloured rectangles the amount of use you can get from this may vary. In the list of callees, you can see that a _lot_ of time is spent in `HashMap::clone` and `HashMap::drop`[^rawtable].  Essentially, we keep creating new `HashMap`s and then destroying them again:
+This is probably pretty overwhelming. We can whittle down the functions to just our code by typing the name of our project (for the sample project this is "rustfest") into the search bar on the left. If we look at the list of functions that take the most time, we can see that after the generated `main` function the most time is spent in `eval`. Probably you guessed this, what with it being one of only two functions in our module, but hey, it's nice to get confirmation. Let's click on `eval` and see what its cost centers are. In the bottom-right, you'll see the list of functions called by `eval` in order of their total cost - these are called the "callees". You can see a visualisation of the callees in a tree-like structure by clicking "callee map" at the top, but depending on your tolerance for soulless rectangles the amount of use you can get from this may vary. In the list of callees, you can see that a _lot_ of time is spent in `HashMap::clone` and `HashMap::drop`[^rawtable].  Essentially, we keep creating new `HashMap`s and then destroying them again:
 
 [^rawtable]: Actually `HashMap` is a wrapper around `RawTable` and so you'll see `RawTable` in the callee map, `HashMap` has been totally inlined at this point and so doesn't appear in the stack trace. If you see a `std` item that you don't recognise then try looking it up in Rust's [stdlib documentation][std-doc]. Unfortunately, that doesn't help here (`RawTable` is private) but it will help for many other types. For example, the "raw" inner type for `Vec` [is public and listed in the stdlib docs][rawvec].
 
@@ -217,7 +221,7 @@ Benchmark your code before and after making the changes above and compare the re
 
 Even after making cloning our strings cheaper, we still do a lot of clones of values that are expensive to duplicate. We call `clone` on `Ast` and `Value`, both of which can contain `Vec`s and `Box`s - expensive to clone. Let's try to make those clones a little cheaper.
 
-A cheap way to avoid clones is as above - use `Rc`. It is not necessarily a good thing, though. For a start, it's less ergonomic - only allowing immutable access. It's not necessarily faster in all cases either, since it adds an extra heap allocation and it means that dropping the value incurs a branch. Also, although `Rc` supports weak references it won't actually drop the value until all weak references have been destroyed - a possible source of memory leaks. `&` pointers do not have this issue - although the compiler gives them special powers, at runtime they're just integers. Both can be used to avoid clones.
+A cheap way to avoid clones is as above - use `Rc`. It is not necessarily a good thing, though. For a start, it's less ergonomic - only allowing immutable access. It's not necessarily faster in all cases either, since it adds an extra heap allocation and it means that dropping the value means checking the refcount and deallocating if it's hit 0. Also, this doesn't affect us but although `Rc` supports weak references it won't actually drop the value until all weak references have been destroyed - a possible source of memory leaks. `&` pointers do not have this issue - although the compiler gives them special powers, at runtime they're just integers. Both can be used to avoid clones.
 
 ## Beginner
 
@@ -237,7 +241,7 @@ Again, make sure to run benchmarks to ensure you're making your code faster and 
 
 Check KCachegrind again - just underneath `clone` and `drop` then next most time-consuming function is `insert`. This is because Rust's default implementation of `HashMap` is not as fast as it could be - by design.
 
-The reasoning behind this is best illustrated with an example. Let's say that we're selling flapjacks on the internet and we want to keep a mapping from customer name to address, in order to know where to send their delicious flapjacks[^flapjacks]. Since we're a small business that has yet to reach [Web Scale][mongodb] we've decided to just use an in-memory `HashMap` like so:
+The reasoning behind this is best illustrated with an example. Let's say that we're selling flapjacks on the internet and we want to keep a mapping from customer name to address, in order to know where to send their delicious flapjacks[^flapjacks]. Since we're a small business that has yet to reach [web scale][mongodb] we've decided to just use an in-memory `HashMap` like so:
 
 [mongodb]: https://www.youtube.com/watch?v=b2F-DItXtZs
 
@@ -291,10 +295,15 @@ extern crate fnv;
 use fnv::FnvHashMap as HashMap;
 ```
 
-## Intermediate/Advanced
+## Intermediate
 
 There are other "fast hashmaps" for Rust, like [`fxhash`][fxhash]. Which one is faster for these inputs?
 
+## Advanced
+
+Apart from error messages, there's not really a reason to store the full name of the variable. We could memoize the hash of the variable name and then use that to key a `HashMap` with the identity function as the hashing algorithm. There doesn't seem to be an implementation of `IdentityHashMap` on [crates.io][crates] but it's easy enough to write.
+
+[crates]: https://crates.io/
 [fxhash]: https://crates.io/crates/fxhash
 
 # Exercise 4 (Intermediate and advanced only)

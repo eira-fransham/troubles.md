@@ -34,7 +34,7 @@
                 {{ range $.Site.Data.header.possibilities }} "{{ . }}", {{ end }}
             ];
 
-            document.getElementById('subtitle').innerHTML = ' - ' + possibilities[Math.floor(possibilities.length * Math.random())];
+            document.getElementById('subtitle').innerHTML = possibilities[Math.floor(possibilities.length * Math.random())];
         };
     </script>
 </head>
@@ -43,12 +43,14 @@
 
 <header>
     <!-- Homepage Title -->
-    <a href="{{ .Site.BaseURL }}" class="title"><strong>{{ $.Site.Title }}</strong></a>
-    <p id="subtitle" class="subtitle"> - {{ index $.Site.Data.header.possibilities 0 }}</p>
-    <!-- Navigation Pages -->
-    {{ range $i, $e:= $.Site.Params.navigation }}&nbsp;&nbsp;{{ with $.Site.GetPage "page" . }}<a href="{{ lower .Permalink }}" style="color:#777;"><strong>{{ title .Title }}</strong></a>{{ end }}{{ end }}
+    <span>
+        <a href="{{ .Site.BaseURL }}" class="title"><strong>{{ $.Site.Title }}</strong></a>
+        <span class="dash"> - </span><p id="subtitle" class="subtitle">{{ index $.Site.Data.header.possibilities 0 }}</p>
+        <!-- Navigation Pages -->
+        {{ range $i, $e:= $.Site.Params.navigation }}&nbsp;&nbsp;{{ with $.Site.GetPage "page" . }}<a href="{{ lower .Permalink }}"><strong>{{ title .Title }}</strong></a>{{ end }}{{ end }}
+    </span>
     <!-- Show RSS feed in the header -->
-    <a href="{{ .Site.BaseURL }}index.xml" style="color:#777;float: right;">
+    <a class="rss" href="{{ .Site.BaseURL }}index.xml">
         <strong>
             <svg
                 xmlns="http://www.w3.org/2000/svg"
