@@ -12,11 +12,11 @@ draft: false
 
 You should get these from your package manager where possible, but if you don't have a package manager installed then you can download them from the linked websites. Your package manager will be [choco][choco] on Windows, [homebrew][brew] on macOS, and on Linux it could be one of `apt-get`, `pacman`, `rpm`, `nix`, `cron`+`wget`, your secretary logging into your computer and downloading unsigned binaries while you sleep, etc.
 
-- You'll need [Rust][rust] to compile the code, of course. You should [Rustup][rustup] to install Rust so that you can use the [nightly build][nightly-rust] - right now, stable still doesn't support benchmarks.
-- The sample code for this is [here][rustfest-sample-code].
+- You'll need [Rust][rust] to compile the code, of course. You should use [Rustup][rustup] to install Rust so that you can use the [nightly build][nightly-rust] - right now, stable still doesn't support benchmarks.
+- You need to clone the [sample code][rustfest-sample-code]. This is the code that we'll benchmark and optimise.
 - To compare results we can use `cargo-benchcmp`, just run `cargo install cargo-benchcmp` to get it.
 - To generate performance traces you'll need [Valgrind][valgrind], this requires macOS or Linux. If you're on Windows then you can use my Valgrind traces, see below.
-- To view the results you can use [KCachegrind][kcachegrind].
+- To view the results you can use [KCachegrind][kcachegrind]. On macOS you can use the Qt version, called "QCachegrind". The app is the same, it'll just look slightly different.
 
 [choco]: https://chocolatey.org/
 [brew]: https://brew.sh/
@@ -29,7 +29,7 @@ You should get these from your package manager where possible, but if you don't 
 
 You'll probably have seen `perf`+`flamegraph` recommended before by [certain very smart and handsome fellows][warp-speed] but I've actually had more luck with callgrind (included in Valgrind). You can try to use `perf` but although it can give very good outputs for some programs it's quite inconsistent. Also, using callgrind means you can use KCachegrind, which is the best thing since sliced bread. In the linked article I said that Valgrind was scary, but that was one of my patented Uninformed Opinions&trade;. It's actually very intuitive and, honestly, easier to use than the "simple" solution of using `perf`. I'll go into more detail about how to use callgrind later on.
 
-[warp-speed]: {{< ref "posts/rust-optimization.md" >}}
+[warp-speed]: {{< ref "/posts/rust-optimization.md" >}}
 
 ## Finding our slow sections
 
@@ -51,11 +51,9 @@ Probably you already know [how to run benchmarks in Rust][benchmarks], but doing
 
 [benchmarks]: https://doc.rust-lang.org/1.16.0/book/benchmark-tests.html
 
-If you haven't already, you need to make sure that you're using the nightly release of Rust, since the stable release doesn't allow you to run benchmarks. If you're using [`rustup`][rustup], this is simple - just do `rustup override set nightly`. If you're not using `rustup`, then use `rustup`. Sorry, it's really the only convenient way to use nightly Rust.
+If you haven't already, you need to make sure that you're using the nightly release of Rust, since the stable release doesn't allow you to run benchmarks. If you're using [Rustup][rustup], this is simple - just do `rustup override set nightly`. If you're not using Rustup, then use Rustup. Sorry, it's really the only convenient way to use nightly Rust.
 
 To get a baseline benchmark, you can output the results of `cargo bench` to a file. On Linux and macOS you can just run `cargo bench > baseline.bench`. On each change you can output the new benchmarks to a new file by running `cargo bench > new.bench`, then compare the two with `cargo benchcmp baseline.bench new.bench`. If you do it now, without making any changes, you should get something that looks like the following:
-
-[rustup]: https://rustup.rs/
 
 ```text
 name                           baseline.bench ns/iter  new.bench ns/iter  diff ns/iter  diff %  speedup 
@@ -86,7 +84,7 @@ debug = true
 We need it for benchmarks, however. For that `cargo` uses the `bench` profile, and so we need to add the following to `Cargo.toml`:
 
 ```toml
-[profile.debug]
+[profile.bench]
 debug = true
 ```
 
@@ -193,7 +191,7 @@ Same as above, but notice that `Rc<String>` actually has _two_ heap allocations 
 
 Do these strings need to be allocated on the heap at all? Combine actually has [an API for zero-copy parsing][combine-zero-copy]. It requires ensuring that the input can have pointers constructed to it - not possible if you're parsing from an iterator over bytes, for example. To ensure this you can add the following to the parser definition:
 
-[combine-zero-copy]: https://docs.rs/combine/3.3.0/combine/parser/range/fn.recognize.html
+[combine-zero-copy]: https://docs.rs/combine/3.3.0/combine/parser/range/index.html
 
 ```diff
 diff --git a/src/lib.rs b/src/lib.rs
@@ -229,7 +227,7 @@ We take an owned `Ast` as an argument to `eval`, which requires cloning the whol
 
 ## Intermediate
 
-What other clones are unnecessary? Most of our code is pure and only requires immutable access. However, we still clone the `Value`s in our scope every time we access them. Is there a way around this?
+What other clones are unnecessary? Most of our code is pure and only requires immutable access to, for example, `Value`s.
 
 ## Advanced
 
@@ -281,7 +279,7 @@ impl<K: Hash + Eq, V> HashMap {
 }
 ```
 
-If you're an attacker trying to take down this innocent flapjack website and you can manipulate which bucket your customer name goes into, you can simply put all of your entries into the _same_ bucket. This means that every new insertion or retreival to that one bucket is extremely slow, because it has to do much more comparisons than you normally would have to. The default `HashMap` used in Rust has two defences against this. Firstly, it initialises the hashing algorithm with a random seed, which means that because you don't know the initial hasher state you can't run the hashing algorithm many times on your own computer, find some customer names that would go into the same bucket, and then send those to the server. Second, the hashing algorithm is cryptographically secure. This means that there is no way to guess the initial state by just running the hasher many times, measuring how the output changes, and then deriving the state with maths. The default hashing algorithm is actually pretty fast, but is bad on small keys (like the short variable names in our programs). To improve performance we can use `FnvHash` from the [`fnv`][fnv] crate.
+If you're an attacker trying to take down this innocent flapjack website and you can work out a way to generate a customer name that will go into a specific bucket, you can simply generate entries that all go into the _same_ bucket. This means that every new insertion or retreival to that one bucket is extremely slow, because it has to do many more comparisons than you normally would have to. The default `HashMap` used in Rust has two defences against this. Firstly, it initialises the hashing algorithm with a random seed, which means that because you don't know the initial hasher state you can't run the hashing algorithm many times on your own computer, find some customer names that would go into the same bucket, and then send those to the server. Second, the hashing algorithm is cryptographically secure. This means that there is no way to guess the initial state by just running the hasher many times, measuring how the output changes, and then deriving the state with maths. The default hashing algorithm is actually pretty fast, but is bad on small keys (like the short variable names in our programs). To improve performance we can use `FnvHash` from the [`fnv`][fnv] crate.
 
 [fnv]: https://crates.io/crates/fnv
 
@@ -319,7 +317,7 @@ Use `std::borrow::Cow` to avoid cloning the scope unless absolutely necessary.
 
 ## Advanced
 
-Explore the use of [persistent data structures][rpds] to maximise sharing. Do they help?
+Explore the use of [persistent data structures][imrs] to maximise sharing. Do they help?
 
 # Further work 1
 
@@ -361,4 +359,4 @@ enum OpCode {
 
 Then you can convert function calls to jumps (first-class functions would get converted to passing function pointers) and the entire `eval` function becomes one loop. Much faster than recursive calls. Probably you won't finish this task by the end of the session but hey, writing compilers is fun.
 
-[rpds]: https://github.com/orium/rpds
+[imrs]: https://github.com/bodil/im-rs
