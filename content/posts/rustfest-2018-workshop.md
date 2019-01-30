@@ -1,5 +1,5 @@
 ---
-title: "RustFest Paris Workshop: Fastware"
+title: "Fastware Workshop"
 date: 2018-05-22T11:22:48+02:00
 draft: false
 ---
@@ -7,6 +7,8 @@ draft: false
 > "In almost every computation a great variety of arrangements for the succession of the processes is possible, and various considerations must influence the selection amongst them for the purposes of a Calculating Engine. One essential object is to choose that arrangement which shall tend to reduce to a minimum the time necessary for completing the calculation." 
 > 
 > <span class="attribution">Ada Lovelace, 1843</span>
+
+If there's one thing you hear about Rust often, it's that it's fast. You see pretty graphs pitting it against Python or Haskell or Go and you think: hey, I want _my_ code to be fast too. So you write up a quick reimplementation in Rust and voilà, you get a 5x or 10x speedup. Problem is, there could be a 20x or 100x speedup acheivable if you just dig a little deeper. In this workshop I'll walk you through the steps needed to squeeze the most performance out of your program.
 
 ## Prerequisites
 
@@ -177,7 +179,18 @@ pub fn eval(program: Ast, variables: &mut HashMap<String, Value>) -> Value {
 }
 ```
 
-If we look at the callees for `clone` and `drop` by double-clicking on them we can see that the `HashMap` is spending a lot of time recursively cloning and dropping its elements. This is because not only is the `HashMap` heap-allocated, but so are its elements. `String` is a heap-allocated string that must be allocated, cloned and deallocated, and `Value` contains `Vec`s and `String`s - both heap-allocated. These values are all immutable and so we don't actually need owned, heap-allocated versions of these. There are a couple of optimisations that you can apply here, and I've seperated them into beginner, intermediate and advanced.
+If we look at the callees for `clone` and `drop` by double-clicking on them we can see that the `HashMap` is spending a lot of time recursively cloning and dropping its elements. This is because not only is the `HashMap` heap-allocated, but so are its elements. `String` is a heap-allocated string that must be allocated, cloned and deallocated, and `Value` contains `Vec`s and `String`s - both heap-allocated.
+
+Cloning `String`s is mostly a problem because `String`s own their data. This means you can mutate the data, which then means that you can't share them - otherwise a `String` might magically change its data while you're using it! Our use of `String` is immutable, though, and so we don't actually need owned `String`s. We can use shared, immutable `String`s instead. There are a couple of ways that you can acheive this, and I've seperated them into beginner, intermediate and advanced.
+
+> ### Sidenote: What's wrong with heap allocation?
+>
+> If you're used to programming in non-systems languages you might not be familiar with what "heap-allocated" means. There's a good explanation of the exact difference in [this StackOverflow answer][so-stack-heap] but for our purposes the difference is that on the stack allocating (reserving space in memory for a new object) and deallocating (freeing up space in memory taken up by an existing object) is essentially free, whereas on the heap it involves more complex work. Not only that, but values in the same stack frame are stored directly after one another, and therefore are more "cache-efficient". This means that it's much faster for the CPU to access them one after another. It took me some digging, but I finally found [a simple, succinct explanation of writing code that effectively uses the cache][dzone-cache-article], although it doesn't go nearly far enough and has advice about rearranging fields that isn't helpful in Rust since [Rust does that for you automatically][camlorn]. For more information than you could ever reasonably use, you can read [What Every Programmer Should Know About Memory][wepskam], which is essentially the Bible of memory access.
+
+[so-stack-heap]: https://stackoverflow.com/questions/79923/what-and-where-are-the-stack-and-heap
+[dzone-cache-article]: https://dzone.com/articles/optimize-memory-access-to-increase-your-coding-per
+[camlorn]: http://camlorn.net/posts/April%202017/rust-struct-field-reordering.html
+[wepskam]: https://lwn.net/Articles/250967/
 
 ## Beginner
 
@@ -217,9 +230,9 @@ I'll leave it to you to figure out the rest.
 
 Benchmark your code before and after making the changes above and compare the results with `cargo benchcmp`. Did it help? If so, how much by?
 
-Even after making cloning our strings cheaper, we still do a lot of clones of values that are expensive to duplicate. We call `clone` on `Ast` and `Value`, both of which can contain `Vec`s and `Box`s - expensive to clone. Let's try to make those clones a little cheaper.
+Even after making cloning our strings cheaper, we still do a lot of clones of values that are expensive to duplicate. We call `clone` on `Ast` and `Value`, both of which can contain `Vec`s and `Box`s - expensive to clone. Again, `Vec` and `Box` both own their data and can mutate it. Since we don't mutate the inner values, we can trade mutability for the ability to share the data - which is much faster. Let's try to make those clones a little cheaper.
 
-A cheap way to avoid clones is as above - use `Rc`. It is not necessarily a good thing, though. For a start, it's less ergonomic - only allowing immutable access. It's not necessarily faster in all cases either, since it adds an extra heap allocation and it means that dropping the value means checking the refcount and deallocating if it's hit 0. Also, this doesn't affect us but although `Rc` supports weak references it won't actually drop the value until all weak references have been destroyed - a possible source of memory leaks. `&` pointers do not have this issue - although the compiler gives them special powers, at runtime they're just integers. Both can be used to avoid clones.
+One way to avoid clones is as above - use `Rc`. It is not necessarily a good thing, though. For a start, it's less ergonomic - only allowing immutable access. It's not necessarily faster in all cases either, since it adds an extra heap allocation and it means that dropping the value means checking the refcount and deallocating if it's hit 0. Also, this doesn't affect us but although `Rc` supports weak references it won't actually drop the value until all weak references have been destroyed - a possible source of memory leaks. `&` pointers do not have this issue - at runtime they just act like integers. Both can be used to avoid clones.
 
 ## Beginner
 
@@ -279,13 +292,17 @@ impl<K: Hash + Eq, V> HashMap {
 }
 ```
 
-If you're an attacker trying to take down this innocent flapjack website and you can work out a way to generate a customer name that will go into a specific bucket, you can simply generate entries that all go into the _same_ bucket. This means that every new insertion or retreival to that one bucket is extremely slow, because it has to do many more comparisons than you normally would have to. The default `HashMap` used in Rust has two defences against this. Firstly, it initialises the hashing algorithm with a random seed, which means that because you don't know the initial hasher state you can't run the hashing algorithm many times on your own computer, find some customer names that would go into the same bucket, and then send those to the server. Second, the hashing algorithm is cryptographically secure. This means that there is no way to guess the initial state by just running the hasher many times, measuring how the output changes, and then deriving the state with maths. The default hashing algorithm is actually pretty fast, but is bad on small keys (like the short variable names in our programs). To improve performance we can use `FnvHash` from the [`fnv`][fnv] crate.
+If you're an attacker trying to take down this innocent flapjack website and you can work out a way to generate a customer name that will go into a specific bucket, you can simply generate entries that all go into the _same_ bucket. This means that every new insertion or retreival to that one bucket is extremely slow, because it has to do many more comparisons than you normally would have to. What we want is for the entries to be approximately evenly-distributed across all the buckets. The default `HashMap` used in Rust has two defences against this. Firstly, it initialises the hashing algorithm with a random seed, which means that because you don't know the initial hasher state you can't run the hashing algorithm many times on your own computer, find some customer names that would go into the same bucket, and then send those to the server. Second, the hashing algorithm is cryptographically secure. This means that there is no way to guess the initial state by just running the hasher many times, measuring how the output changes, and then using some smart maths to derive the original state. The default hashing algorithm is actually pretty fast, but is bad on small keys (like the short variable names in our programs). To improve performance we can use `FnvHash` from the [`fnv`][fnv] crate.
 
 [fnv]: https://crates.io/crates/fnv
 
+> ### Sidenote: `hashbrown`
+> 
+> A crate was released recently called `hashbrown`, which uses a hashing function similar to `FnvHash` (it actually uses `fxhash`, mentioned below), but additionally implements various other optimisations to improve performance. I tried converting the project to use `hashbrown`'s `HashMap` type and found it to be pretty much the same for most of the benchmarks, except `run_many_variables` which improved by ~5%, and `run_nested_func` which got an incredible _26%_ faster. I'd consider it a win, although the crate is still too young for me to immediately recommend it for the sake of this workshop. If you need a fast hashmap type, consider using `hashbrown`, although benchmark and make sure it doesn't cause a performance regression.
+
 ## Beginner
 
-Just add `FnvHashMap` to your crate, and check the benchmarks.
+Just add `FnvHashMap` to your crate, and use `cargo benchcmp` to check the benchmarks.
 
 ```rust
 extern crate fnv;
@@ -297,19 +314,26 @@ use fnv::FnvHashMap as HashMap;
 
 There are other "fast hashmaps" for Rust, like [`fxhash`][fxhash]. Which one is faster for these inputs?
 
+[fxhash]: https://crates.io/crates/fxhash
+
 ## Advanced
 
 Apart from error messages, there's not really a reason to store the full name of the variable. We could memoize the hash of the variable name and then use that to key a `HashMap` with the identity function as the hashing algorithm. There doesn't seem to be an implementation of `IdentityHashMap` on [crates.io][crates] but it's easy enough to write.
 
 [crates]: https://crates.io/
-[fxhash]: https://crates.io/crates/fxhash
 
 # Exercise 4 (Intermediate and advanced only)
 
-Although we made cloning the scope a lot cheaper, we still clone it in cases that are not necessary. For example, if we call a function with no arguments that doesn't define any internal variables, we don't need to clone the scope at all. We can avoid that by either passing a reference to an owned `HashMap` if possible, and an immutable reference otherwise. If it turns out that we need to clone the hashmap then we can replace the reference with an owned `HashMap` and mutate it from there. The standard library has a type to make this easy: [`Cow`][std-borrow-cow].
+Although we made cloning the scope a lot cheaper, we still clone it in cases that are not necessary. For example, if we call a function with no arguments that doesn't define any internal variables, we don't need to clone the scope at all. We can avoid that by either passing an owned `HashMap` if possible, and an immutable reference otherwise. If we have a reference and we need an owned `HashMap`, we can clone and mutate the clone. If we get given an owned value then we don't need to clone at all. The standard library has a type to make this easy: [`Cow`][std-borrow-cow].
 
 [std-borrow-cow]: https://doc.rust-lang.org/std/borrow/enum.Cow.html
 [cow-to-mut]: https://doc.rust-lang.org/std/borrow/enum.Cow.html#method.to_mut
+
+> ### Sidenote: `Cow<[T]>`
+>
+> A pattern that isn't talked about often is that `Cow<'static, [T]>` and `Cow<'static, str>` can be useful defaults to use for APIs that want to store owned arrays/strings (for example, to avoid lifetime annotaton burden) but that only need to read from them. This allows users to supply static arrays or strings if possible for no extra cost and pass ownership of a `Vec` or `String` if they want to create the value dynamically. One issue with this is that reading from a `Cow` is slightly slower than reading from a `&[T]` because you need to check the tag first. I've written [a crate to address this issue][cowvec], but I haven't benchmarked it against `std::borrow::Cow` yet so I don't know if it's worth the effort and complexity.
+
+[cowvec]: https://github.com/Vurich/cowvec
 
 ## Intermediate
 
@@ -319,9 +343,12 @@ Use `std::borrow::Cow` to avoid cloning the scope unless absolutely necessary.
 
 Explore the use of [persistent data structures][imrs] to maximise sharing. Do they help?
 
+[imrs]: https://github.com/bodil/im-rs
+
 # Further work 1
 
 If you did the beginner or intermediate tasks for the previous exercises, why not try going back and doing the task a level above? If you did the advanced level, are there any more optimisations that you could apply to this? If so, implement them and see if they improve your results.
+
 # Further work 2
 
 Try doing this same process on one of your own projects. Add debuginfo to the benchmarks, run it with `valgrind --tool=cachegrind /path/to/benchmarks --bench` and then open the results in KCachegrind. See if there's some way to reduce unnecessary copies, unnecessary work, and/or unnecessary allocation. Good targets for optimisation are virtual machines, image processing libraries and games. For games, though, if you're using a game engine then your traces might show most of your time taken in the engine's code and not yours.
@@ -333,7 +360,7 @@ Most modern languages don't operate directly on the AST of their program, they c
 [dynamic-vs-lexical-scope]: https://stackoverflow.com/a/22395580
 
 ```rust
-enum OpCode {
+enum OpCode<'a> {
     // ..snip..
 
     /// Access a variable in the current function's scope.
@@ -348,15 +375,12 @@ enum OpCode {
     /// made it lexically scoped. As a result, we must look up the variable
     /// by name each time.
     PushVariableFromSurroundingScope {
-        /// The name of the variable. This would be `&str` but I've chosen
-        /// `String` here to illustrate my point.
-        variable_name: String,
+        /// The name of the variable.
+        variable_name: &'a str,
     }
 
     // ..snip..
 }
 ```
 
-Then you can convert function calls to jumps (first-class functions would get converted to passing function pointers) and the entire `eval` function becomes one loop. Much faster than recursive calls. Probably you won't finish this task by the end of the session but hey, writing compilers is fun.
-
-[imrs]: https://github.com/bodil/im-rs
+At compile-time you can check if a variable of the given name has been defined in the current scope and use stack slots if so, otherwise using named variables. Then you can convert function calls to jumps (first-class functions would get converted to passing function pointers) and the entire `eval` function becomes one loop. Much faster than recursive calls. Probably you won't finish this task by the end of the session but hey, writing compilers is fun.

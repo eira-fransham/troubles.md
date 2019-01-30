@@ -919,9 +919,7 @@ correct behaviour. You'll notice some optimizations here:
   each loop but the backwards method is 10% faster. This seems to be due to
   better instruction-level parallelism. The multiplications can be parallelized
   and only the addition relies on the previous iteration's value for `output`,
-  and addition is much faster.
-
-  Any folding operations can be improved in this way by exploiting the
+  and addition is much faster. Any folding operations can be improved in this way by exploiting the
   algebraic laws (in this case, the distributive law) to improve the number of
   operations that can be done in parallel.
 * We rely on overflow to test `A < x < B` comparisons. This is only useful here
@@ -1074,7 +1072,7 @@ If I had to sum the trick to optimization up in a pithy QotW-ready snippet it
 would be this:
 
 > The fastest code is code that doesn't run at all, the second-fastest code is
-> code that never stops running.
+> code that never has to wait.
 
 Ideally, you want to do less work, and if you're doing the minimum amount of
 work you want to reduce the amount of time the CPU spends waiting around.
