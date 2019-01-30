@@ -5,6 +5,9 @@ draft: false
 ---
 
 > ### Preamble
+> 
+> This is part 1 of a 3-part miniseries on issues with WebAssembly and proposals to fix them.
+> 
 > This article assumes some familiarity with virtual machines, compilers and WebAssembly, but I'll try to link to relevant information where necessary so even if you're not you can follow along.
 > <br/><br/>
 > Also, this series is going to come off as if I dislike WebAssembly. I love WebAssembly! I wrote a [whole article about how great it is][wasm-on-the-blockchain]! In fact, I love it so much that I want it to be the best that it can be, and this series is me working through my complaints with the design in the hope that some or all of these issues can be addressed soon, while the ink is still somewhat wet on the specification.
@@ -73,7 +76,7 @@ This essentially makes WebAssembly a register machine without liveness analysis,
 
 ## Why?
 
-The developers of the WebAssembly spec aren't dumb. For the most part it's an extremely well-designed specification. However, they are weighed down by the fact that WebAssembly started out as a simplified form of asm.js. WebAssembly started out as an AST, not a bytecode. Essentially it was originally designed to be source code, like JavaScript. It would be a more-efficient representation thereof but it still wasn't a proper virtual machine instruction set. Then, it became a register machine[^infinite-registers], and only at the last minute did it become a stack machine. At that point, concepts like locals were quite entrenched in the spec. Not only that, but for the most part the WebAssembly specification team were flying blind. No streaming compiler had yet been built, hell, no compiler had yet been built. It wasn't clear that having locals would be problematic - after all, C gets by just fine using local variables that the compiler constructs the SSA graph for.
+The developers of the WebAssembly spec aren't dumb. For the most part it's an extremely well-designed specification. However, they are weighed down by WebAssembly's legacy. WebAssembly started out not as a bytecode, but more like a simplified binary representation for asm.js. Essentially it was originally designed to be source code, like JavaScript. It would be a more-efficient representation thereof but it still wasn't a proper virtual machine instruction set. Then, it became a register machine[^infinite-registers], and only at the last minute did it become a stack machine. At that point, concepts like locals were quite entrenched in the spec. Not only that, but for the most part the WebAssembly specification team were flying blind. No streaming compiler had yet been built, hell, no compiler had yet been built. It wasn't clear that having locals would be problematic - after all, C gets by just fine using local variables that the compiler constructs the SSA graph for.
 
 [^infinite-registers]: I believe that it had infinite registers and so it was possible to generate it in SSA form, but it had no liveness analysis.
 
@@ -87,6 +90,8 @@ So currently locals represent both function arguments and local variables. There
 
 [multi-return]: https://github.com/WebAssembly/multi-value/blob/master/proposals/multi-value/Overview.md
 
-This massively reduces the complexity of WebAssembly compilers without reducing the expressivity, and allows the compilers generating the WebAssembly to encode more of their knowledge about the original source into the WebAssembly itself. Although optimising compilers will probably not generate better code from this, they will become much simpler and easier to maintain, and streaming compilers will become significantly simpler and produce significantly better code.
+This massively reduces the complexity of the WebAssembly specification and compilers for it without reducing the expressivity, and allows the compilers generating the WebAssembly to encode more of their knowledge about the original source into the WebAssembly itself. Although optimising compilers will probably not generate better code from this, they will become much simpler and easier to maintain, and streaming compilers will become significantly simpler and produce significantly better code.
+
+Finally, not only is a stack machine like this automatically in SSA form, but it's automatically in _strict_ SSA form. This means that it is statically impossible to access undefined variables. In WebAssembly as it exists now, you have to zero locals when entering a function unless you can statically prove that the local is always set before it is accessed. Again, the compilers almost always have this information, and removing locals makes accessing undefined memory statically impossible.
 
 Join me next time where I tackle WebAssembly's problematic control flow.
