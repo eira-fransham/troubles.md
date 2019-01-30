@@ -7,7 +7,9 @@ draft: false
 > ### Preamble
 > This article assumes some familiarity with virtual machines, compilers and WebAssembly, but I'll try to link to relevant information where necessary so even if you're not you can follow along.
 > <br/><br/>
-> Also, this series is going to come off as if I dislike WebAssembly. I love WebAssembly! In fact, I love it so much that I want it to be the best that it can be, and this series is me working through my complaints with the design in the hope that some or all of these issues can be addressed soon, while the ink is still fresh on the specification.
+> Also, this series is going to come off as if I dislike WebAssembly. I love WebAssembly! I wrote a [whole article about how great it is][wasm-on-the-blockchain]! In fact, I love it so much that I want it to be the best that it can be, and this series is me working through my complaints with the design in the hope that some or all of these issues can be addressed soon, while the ink is still somewhat wet on the specification.
+
+[wasm-on-the-blockchain]: http://troubles.md/posts/why-wasm/
 
 I'm sure you're all familiar with WebAssembly by now. It's seeing use everywhere, from plugins to blockchain smart contracts to, of course, the web. If you go to the Wikipedia article for WebAssembly right now, you'll get a great overview of the technology, except for one thing: the "Design" section states:
 
@@ -40,7 +42,7 @@ If the IR is entirely in-memory this isn't so bad, especially if your code is in
 
 You can, of course, add liveness analysis metadata to the machine, but that liveness analysis is only useful if your code is in SSA form - if it's not SSA form then the liveness is _extremely_ course-grained.
 
-Well, that's where WebAssembly comes in. See, WebAssembly has these things called locals. Locals are mutable variables that live for the lifetime of a function. Since WebAssembly blocks can't take arguments, they're the only way for blocks to receive data from outside. This includes loops, the classic example, but it also includes regular blocks. For example:
+Well, that's where WebAssembly comes in. See, WebAssembly has these things called locals. Locals are mutable variables that live for the lifetime of a function. Since WebAssembly blocks can't take arguments, they're the only way for blocks to receive data from outside. This includes stuff like loop counters, the classic example for SSA-defeating mutable variables, but it also includes regular blocks. For example:
 
 ```lisp
 (func (result i32)
@@ -61,11 +63,13 @@ You have to do this:
   ))
 ```
 
-This is a problem. Usually a stack machine can be trivially converted to SSA form with liveness analysis - an item on the stack is dead when it is used as the argument to an operator - no ifs, no buts. Even a `pick` operator (which duplicates the nth item of the stack to the top of the stack) can be thought of in these terms as long as the argument to `pick` is a compile-time constant, although generally the conversion of a stack machine that includes a `pick` instruction would be implemented using refcounting. However, locals are a problem. They're mutable, so you can't trivially convert them to SSA, and they always live for the lifetime of the function.
+This is a problem. Usually a stack machine can be trivially converted to SSA form with liveness analysis - an item on the stack is dead when it is used as the argument to an operator - no ifs, no buts. Even a `pick` operator[^pick-operator] can be thought of in these terms as long as the argument to `pick` is a compile-time constant, although generally the SSA conversion of a stack machine that includes a `pick` instruction would be implemented using refcounting - meaning that reading a variable doesn't involve creating an unnecessary new one. However, locals are a problem. They're mutable, so you can't trivially convert them to SSA, and they always live for the lifetime of the function.
 
-This poses a problem for optimisation. SSA form is one of the most powerful optimisation tools, and the fact that locals are mutable defeats that, but the fact that they're global to the function causes another problem. Say you're trying to compile WebAssembly into x86 on Linux (which uses the SystemV calling convention). You'll take some number of arguments in registers, and now unless you do your own liveness analysis on that function those registers are permanently taken up by those arguments. Without extra analysis you don't know when the last usage of that argument is, and so you can't ever reuse the register used by that argument for something else. Even a function that never uses any of its arguments still can't use those registers for something else.
+[^pick-operator]: A `pick` operator duplicates the nth item of the stack to the top of the stack. Unfortunately, it's not available in WebAssembly.
 
-This is a register machine without liveness analysis, but not only that, it's a register machine that isn't in SSA form - both of the tools at our disposal to do optimisation are unavailable. In a true, optimising compiler we can recreate that information, but WebAssembly was already emitted by a compiler that has that information. There's no technical reason why we should have to do that work again, it's just a deficiency in the language. Any compiler that has to act on a stream of WebAssembly will end up generating significantly worse code for essentially no good reason.
+This poses a problem for optimisation. SSA form is one of the most powerful optimisation tools. The fact that locals are mutable defeats that, and the fact that they're global to the function defeats liveness analysis. For an example of why this is an issue, say you're trying to compile WebAssembly into some native architecture. You'll compile your code into one that uses some number of arguments in registers, but now unless you do your own liveness analysis on that function those registers are permanently marked "in use" by those arguments. Without extra analysis you don't know when the last usage of that argument is, and so you can't ever reuse the register used by that argument for something else. Even a function that never uses any of its arguments still can't reuse the space used by those arguments for anything else.
+
+This essentially makes WebAssembly a register machine without liveness analysis, but not only that, it's a register machine that isn't even in SSA form - both of the tools at our disposal to do optimisation are unavailable. In a true, optimising compiler we can recreate that information, but WebAssembly was already emitted by a compiler that generated that information once. There's no technical reason why we should have to do that work again, it's just a deficiency in the language. A compiler that has to act on a stream of WebAssembly has less ability to recreate this information and will end up generating significantly worse code for essentially no good reason.
 
 ## Why?
 
