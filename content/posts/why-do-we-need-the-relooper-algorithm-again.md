@@ -6,14 +6,14 @@ draft: false
 
 > ### Preamble
 > 
-> This is part 2 of a 3-part miniseries on issues with WebAssembly and proposals to fix them. [Part 1][part-1].
+> This is part 2 of a 4-part miniseries on issues with WebAssembly and proposals to fix them. [Part 1 here][part-1].
 > <br/><br/>
 > This article assumes some familiarity with virtual machines, compilers and WebAssembly, but I'll try to link to relevant information where necessary so even if you're not you can follow along.
 > <br/><br/>
 > Also, this series is going to come off as if I dislike WebAssembly. I love WebAssembly! I wrote a [whole article about how great it is][wasm-on-the-blockchain]! In fact, I love it so much that I want it to be the best that it can be, and this series is me working through my complaints with the design in the hope that some or all of these issues can be addressed soon, while the ink is still somewhat wet on the specification.
 
-[wasm-on-the-blockchain]: http://troubles.md/posts/why-wasm/
-[part-1]: http://troubles.md/posts/wasm-is-not-a-stack-machine/
+[wasm-on-the-blockchain]: {{< ref "/posts/why-wasm.md" >}}
+[part-1]: {{< ref "/posts/wasm-is-not-a-stack-machine.md" >}}
 
 So if there's one thing people know about WebAssembly control flow, it's that it doesn't allow `goto`. `goto`, we're told, is [considered harmful][goto-considered-harmful], and so WebAssembly only implements simple control flow constructs:
 
@@ -71,12 +71,14 @@ CFGs are the backbone of almost every static language compiler out there. Both L
 
 [relooper]: http://mozakai.blogspot.com/2012/05/reloop-all-blocks.html
 
-Currently compilers that convert WebAssembly to native code cannot generate good code for this "fallback" code, despite the fact that supporting arbitrary CFGs in WebAssembly comes with no downside in terms of runtime performance, security or correctness. Supporting arbitrary CFGs would massively simplify both the generation of WebAssembly by LLVM and the compilation of WebAssembly to native code[^compilation-to-native]. WebAssembly control flow is a lossy conversion - we start with a CFG in LLVM which gets converted to WebAssembly control flow, then the native compiler converts that control flow back into a less-efficient CFG which then has optimisations applied and is then compiled to native. It would also allow GCC to generate WebAssembly - developers simply gave up implementing a WebAssembly backend for GCC as it was much too difficult to correctly implement a relooper-style algorithm over their CFG representation.
+Currently compilers that convert WebAssembly to native code cannot generate good code for this "fallback" code, despite the fact that supporting arbitrary CFGs in WebAssembly comes with no downside in terms of runtime performance, security or correctness. WebAssembly control flow is a lossy conversion - we start with a CFG in LLVM which gets converted to WebAssembly control flow, then the native compiler converts that control flow back into a less-efficient CFG which then has optimisations applied and is then compiled to native. For most compilers the only way to get efficient code is to detect the loop-and-switch emitted by relooper and stackifier and convert it back into the arbitrary CFG that it started as. You're basically having to write a slow, error-prone algorithm to convert a CFG to Wasm and then another slow, error-prone algorithm to convert the Wasm back into the CFG that it started as. No wonder GCC developers simply gave up implementing a WebAssembly backend as it was much too difficult to correctly implement a relooper-style algorithm over their CFG representation.
 
 [^compilation-to-native]: I should note that it will only actually simplify the compilation to native for simple or streaming compilers, since for production-grade optimising compilers they convert the WebAssembly control flow back into a CFG.
 
 ## Why is this not already implemented?
 
-Well for a start it requires arguments to blocks and multiple returns to be supported, neither of which are in the MVP. As for why those aren't supported in the MVP, I don't really have a good answer. As with my previous article, the question really comes down to WebAssembly's history as a statically-typed binary encoding of JavaScript and the lack of serious implementations while the specification was being written. Unlike the previous article, I find it utterly baffling that the issues with compiling to WebAssembly's inexpressive control flow from any modern compiler weren't so glaringly obvious as to prevent the release of the MVP until they were fixed. I wasn't there for the development of the specification though and so I can't speak for what was going on behind the scenes.
+Well for a start it requires arguments to blocks and multiple returns to be supported, neither of which are in the MVP. As for why those aren't supported in the MVP, I don't really have a good answer. As with my previous article, the question really comes down to WebAssembly's history as a statically-typed binary encoding of JavaScript and the lack of serious implementations while the specification was being written. Unlike the previous article, I find it utterly baffling that the issues with compiling to WebAssembly's inexpressive control flow from any modern compiler weren't so glaringly obvious as to prevent the release of the MVP until they were fixed. The development of emscripten should be enough proof that structured control flow like this is a very poor compilation target. I wasn't there for the development of the specification though and so I can't speak for what was going on behind the scenes.
 
-Join us next time for a much more positive post with my ideas about how to fix some of these issues and more in the medium-term.
+There is one thing that may have been a major factor to the decision not to adopt arbitrary CFGs for WebAssembly control flow. I believe that V8 is an exception to most compilers in that it doesn't represent code as a CFG at all - it maintains roughly JS-compatible control flow all the way from front-end to codegen. In order to support this V8 would have to be converted to use CFGs, they'd have to implement something like Relooper internally, or they'd have to write a new WebAssembly runtime from scratch. Google was and is a major roadblock to getting this implemented as they have multiple people on the committee in charge of WebAssembly who have veto power.
+
+Join us next time for a peek at the stack. I promise that this will be the last negative post.

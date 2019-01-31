@@ -6,13 +6,13 @@ draft: false
 
 > ### Preamble
 > 
-> This is part 1 of a 3-part miniseries on issues with WebAssembly and proposals to fix them.
-> 
+> This is part 1 of a 4-part miniseries on issues with WebAssembly and proposals to fix them.
+> <br/><br/>
 > This article assumes some familiarity with virtual machines, compilers and WebAssembly, but I'll try to link to relevant information where necessary so even if you're not you can follow along.
 > <br/><br/>
 > Also, this series is going to come off as if I dislike WebAssembly. I love WebAssembly! I wrote a [whole article about how great it is][wasm-on-the-blockchain]! In fact, I love it so much that I want it to be the best that it can be, and this series is me working through my complaints with the design in the hope that some or all of these issues can be addressed soon, while the ink is still somewhat wet on the specification.
 
-[wasm-on-the-blockchain]: http://troubles.md/posts/why-wasm/
+[wasm-on-the-blockchain]: {{< ref "/posts/why-wasm.md" >}}
 
 I'm sure you're all familiar with WebAssembly by now. It's seeing use everywhere, from plugins to blockchain smart contracts to, of course, the web. If you go to the Wikipedia article for WebAssembly right now, you'll get a great overview of the technology, except for one thing: the "Design" section states:
 
@@ -43,7 +43,7 @@ Are `%0` and `%1` used after the addition? Without lookahead, you have no way of
 
 If the IR is entirely in-memory this isn't so bad, especially if your code is in SSA form, but it means that you have to do extra work for the same quality of code and it means that a streaming compiler (like FireFox's Wasm baseline compiler) is unable to produce good code.
 
-You can, of course, add liveness analysis metadata to the machine, but that liveness analysis is only useful if your code is in SSA form - if it's not SSA form then the liveness is _extremely_ course-grained.
+You can, of course, add liveness analysis metadata to the machine, but that liveness analysis is only useful if your code is in SSA form - if it's not SSA form then the liveness is _extremely_ coarse-grained.
 
 Well, that's where WebAssembly comes in. See, WebAssembly has these things called locals. Locals are mutable variables that live for the lifetime of a function. Since WebAssembly blocks can't take arguments, they're the only way for blocks to receive data from outside. This includes stuff like loop counters, the classic example for SSA-defeating mutable variables, but it also includes regular blocks. For example:
 
